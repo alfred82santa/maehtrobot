@@ -1,0 +1,7 @@
+blueprints:
+  telegram_v2:
+    params:
+      resources:
+        maehtrobot:
+          params:
+            token: 134190358:AAHsP2akVHYiMMy6-ionse8FtSIxhxu7-0I

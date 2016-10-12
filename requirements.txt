@@ -1,0 +1,5 @@
+aiohttp
+dirty-models
+motor
+git+https://github.com/alfred82santa/configure.git
+git+https://github.com/alfred82santa/telebot.git

@@ -1,0 +1,80 @@
+
+class_namespaces:
+  logging: logging
+  mongo: motor.motor_asyncio
+  telegramv2: maehtrobot.blueprints.telegram_v2
+
+register_factories:
+  - maehtrobot.common.mongo.register_mongo_factories
+
+resources:
+  main_mongo_connection:
+    "mongo:AsyncIOMotorClient":
+      hosts: localhost
+
+  main_mongo_database:
+    "mongo:AsyncIOMotorDatabase":
+      connection: resource:main_mongo_connection
+      database: maehtrobot
+
+
+
+blueprints:
+  core:
+    type: "core:CoreBlueprint"
+  telegram_v2:
+    type: "telegramv2:TelegramV2Blueprint"
+    params:
+      class_namespaces:
+        service-client: service_client
+        aiotelebot: aiotelebot
+      register_factories:
+        - service_client.factories.register_service_client_factories
+        - aiotelebot.register_bot_factories
+      resources:
+        maehtrobot:
+          type: aiotelebot:Bot
+          params:
+            client_name: maehtrobot
+            token: your token
+            loop: "blueprint:loop"
+            logger: "blueprint:logger"
+            client_plugins:
+              - service-client:plugins.TrackingToken
+              - service-client:plugins.Elapsed
+              #- "service-client:plugins.Pool":
+              #    limit: 30
+              - "service-client:plugins.InnerLogger":
+                  max_body_length: 1000
+                  logger:
+                    "logging:Logger":
+                      name: maehtrobot
+                      propagate: false
+                      handlers:
+                        - "logging:handlers.WatchedFileHandler":
+                            filename: maehtrobot.config.LOGS_BASE_PATH "/maehtrobot.log"
+                            formatter:
+                              "service-client:formatters.ServiceClientFormatter":
+                                fmt: '{asctime} | {action} | {method} {full_url} | {message}'
+                                request_fmt: "\nHeaders:\n{headers}\nBody:\n{body}"
+                                response_fmt: " | {status_code} {status_text} | {headers_elapsed}\nHeaders:\n{headers}\nBody:\n{body}"
+                                exception_fmt: " | {exception_repr}"
+                                parse_exception_fmt: " | {status_code} {status_text} | {headers_elapsed} | {exception_repr}\nHeaders:\n{headers}\nBody:\n{body}"
+                                headers_fmt: "\t{name}: {value}"
+                                headers_sep: "\n"
+                                datefmt: "\u0025Y-\u0025m-\u0025dT\u0025H:\u0025M:\u0025S\u0025z"
+                                style: '{'
+
+logger:
+  "logging:Logger":
+    name: null
+    handlers:
+      - "logging:handlers.WatchedFileHandler":
+          filename: maehtrobot.config.LOGS_BASE_PATH "/main.log"
+          formatter:
+            "logging:Formatter":
+              fmt: '{asctime} | {levelname} | {message}'
+              style: '{'
+              datefmt: "\u0025Y-\u0025m-\u0025dT\u0025H:\u0025M:\u0025S\u0025z"
+
+

@@ -1,0 +1,5 @@
+aiohttp
+dirty-models
+sphinx >= 1.4
+sphinx-autodoc-typehints
+dirty_models_sphinx
